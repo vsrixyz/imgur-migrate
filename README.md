@@ -45,7 +45,10 @@ git clone https://github.com/dlccyes/imgur-migrate
 sh install.sh
 ```
 
-Now you the command `imgur-migrate` should be available. Note that it may take a while when running the first time.
+Now the command `imgur-migrate` should be available.
+
+`install.sh` resolves paths from its own location, so you can run it from any directory.
+If no binary is present in `dist/`, it will try to build one with `pyinstaller`.
 
 **For Windows**
 
