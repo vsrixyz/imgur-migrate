@@ -1,133 +1,109 @@
-# Imgur Migrate
+# Imgur Migrate (Fork)
 
-According to Imgur's [recent announcement](https://help.imgur.com/hc/en-us/articles/14415587638029), some images will be deleted from their platform after May 15, 2023. 
+This repository is a maintained fork of the original project by `dlccyes`.
 
-To avoid losing your images, you can use this tool to replace all Imgur links in your Markdown files with local images.
+- Original project: <https://github.com/dlccyes/imgur-migrate>
+- This fork: <https://github.com/vsrixyz/imgur-migrate>
 
-## What it does
+## What This Tool Does
 
-This tool will find all Imgur links in the markdown files under your directory, download them, and replace your Imgur links with interal links to local images.
+`imgur-migrate` scans Markdown files, downloads embedded Imgur images, and rewrites image links to local files.
 
-Suppose you have 1 Imgur lank in `README.md` and 2 in `docs/System Design.md`:
+Example conversion:
 
+- From: `![diagram](https://i.imgur.com/abc123.png)`
+- To (wikilink mode): `![[notes-1.png]]`
+- To (mdlink mode): `![diagram](notes-1.png)`
+
+## Improvements In This Fork
+
+Compared to the original upstream version, this fork adds:
+
+- Better install script reliability:
+  - `install.sh` works from any current directory.
+  - If the binary is missing, it attempts a local `pyinstaller` build automatically.
+  - Clearer install/build error messages.
+- Safer download behavior:
+  - Request timeout and explicit user-agent.
+  - Handles request failures without crashing.
+  - Skips non-200 responses, empty payloads, and non-image (`text/*`) content.
+  - Avoids rewriting files when no valid images were downloaded.
+- Optional output folder for downloaded images:
+  - New CLI option: `--images-dir <subdir>`
+  - Stores images in a subdirectory and rewrites Markdown links to that relative path.
+
+## Install
+
+### Clone
+
+```bash
+git clone https://github.com/vsrixyz/imgur-migrate
+cd imgur-migrate
 ```
-.
-├── README.md
-└── docs
-    └── System Design.md
-```
 
-becomes
+### macOS / Linux
 
-```
-.
-├── README.md
-├── README-1.png
-└── docs
-    ├── System Design.md
-    ├── System Design-1.png
-    └── System Design-2.png
-```
-
-In `docs/System Design.md` for example, it will replace `![text](https://i.imgur.com/123456.png)` with `![[System Design-1.png]]` or `![text](System Design-1.png)`, where the downloaded image name = `<markdown file name>-<auto-incremented number>`.
-
-## How to run
-
-### Install
-
-```
-git clone https://github.com/dlccyes/imgur-migrate
-```
-
-**For Linux or MacOS**
-
-```
+```bash
 sh install.sh
 ```
 
-Now the command `imgur-migrate` should be available.
+This installs `imgur-migrate` to `/usr/local/bin/imgur-migrate`.
 
-`install.sh` resolves paths from its own location, so you can run it from any directory.
-If no binary is present in `dist/`, it will try to build one with `pyinstaller`.
+### Windows
 
-**For Windows**
+No native binary is provided in this repo. Run directly with Python:
 
-I didn't create a binary for Windows, so you'll have to run the python file directly, or use WSL.
-
-```
-pip3 install -r requirements.txt
+```bash
+pip install -r requirements.txt
+python imgur_migrate.py -h
 ```
 
-Replace all the `imgur-migrate` commands below with `python3 imgur_migrate.py`.
+## Usage
 
-### See usage 
+### Help
 
-```
+```bash
 imgur-migrate -h
 ```
 
-### Mode
+### Modes
 
-There are 2 modes, `wikilink` and `mdlink`.
+- `wikilink`: `![[file-1.png]]`
+- `mdlink`: `![alt](file-1.png)`
 
-The 2 modes will convert `![text](https://i.imgur.com/123456.png)` to 
-
-- `wikilink`: `![[System Design-1.png]]`
-- `mdlink`: `![text](System Design-1.png)`
-
-Specify the mode with `-m` or `--mode`:
-
-```
-imgur-migrate -m wikilink
+```bash
+imgur-migrate --mode wikilink
 imgur-migrate --mode mdlink
 ```
 
-If `-m` or `--mode` is not specified, it will use the default mode `wikilink`.
+Default mode is `wikilink`.
 
-### Run the whole directory
+### Process a directory
 
-Run it against the current directory
-
-```
+```bash
 imgur-migrate
+imgur-migrate /path/to/notes
 ```
 
-Or run it against a specific directory
+### Process one file
 
-```
-imgur-migrate <path/to/your/directory>
-```
-
-### Run a file
-
-Run it against a specific file inside a directory
-
-```
-imgur-migrate <path/to/your/directory> <filename>
+```bash
+imgur-migrate /path/to/notes "README.md"
 ```
 
-### Test
+### Save images to a subfolder
 
-You can test it on the example directory in this repo.
-
-```
-imgur-migrate example
+```bash
+imgur-migrate /path/to/notes --images-dir assets/img
 ```
 
 ## Limitations
 
-I create this simple tool for my own needs, so it isn't very featureful.
+- Only Imgur links matching `https://i.imgur.com/...` are replaced.
+- Only Markdown image syntax `![](...)` / `![alt](...)` is processed.
+- Links inside code blocks or inline code are not excluded.
 
-### Only replace Imgur links
+## Upstream Attribution
 
-If you have other external image links, they won't be replaced.
-
-Also, it will only search for links starting with `https://i.imgur.com/` e.g. `https://i.imgur.com/123456.png`.
-
-### Only works for markdown-style image links in markdow files
-
-It will only search for markdown files, and only for Imgur links that are in `![]()` or `![text]()`. Meaning, if you have HTML-style embedded images in your markdown file, they won't be replaced.
-
-### Does not escape codeblock
-
-If your Imgur link is in codeblock or inline code, it will still be replaced.
+All credit for the original idea and initial implementation goes to the upstream project:
+<https://github.com/dlccyes/imgur-migrate>
